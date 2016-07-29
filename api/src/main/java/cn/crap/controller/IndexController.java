@@ -28,6 +28,7 @@ import cn.crap.model.User;
 import cn.crap.utils.Config;
 import cn.crap.utils.Const;
 import cn.crap.utils.GetBeanBySetting;
+import cn.crap.utils.MyCookie;
 import cn.crap.utils.MyString;
 import cn.crap.utils.Tools;
 import cn.crap.utils.ValidateCodeService;
@@ -39,6 +40,7 @@ public class IndexController extends BaseController<User> {
 	IMenuService menuService;
 	@Autowired
 	private ICacheService cacheService;
+	
 	/**
 	 * 默认页面，重定向web.do，不直接进入web.do是因为进入默认地址，浏览器中的href不会改变， 会导致用户第一点击闪屏
 	 * 
@@ -49,6 +51,39 @@ public class IndexController extends BaseController<User> {
 	public void home(HttpServletResponse response) throws Exception {
 		response.sendRedirect("web.do");
 	}
+	
+	@RequestMapping("/searchList.do")
+	@ResponseBody
+	public void searchList(HttpServletResponse response) throws Exception {
+		// 只显示前10个
+		StringBuilder sb = new StringBuilder("<div class='tl'>");
+		@SuppressWarnings("unchecked")
+		ArrayList<String> searchWords = (ArrayList<String>) cacheService.getObj(Const.CACHE_SEARCH_WORDS);
+		if(searchWords != null){
+			int i = 0;
+			String itemClass = "";
+			for(String searchWord: searchWords){
+				i = i+1;
+				if(i > 10) break;
+				if(i == 1) itemClass = " text-danger ";
+				else if(i == 2) itemClass = " text-info ";
+				else if(i == 3) itemClass = " text-warning ";
+				else itemClass = " C555 ";
+				
+				
+				String showText = searchWord.substring(0, searchWord.length()>20?20:searchWord.length());
+				if(searchWord.length()>20){
+					showText = showText + "...";
+				}
+				sb.append( "<a onclick=\"iClose('lookUp');\" class='p3 pl10 dis "+ itemClass +"' href='web.do#/frontSearch/"+searchWord+"'>"+showText+"</a>");
+			}
+			
+		}
+		sb.append("</div>");
+		printMsg(sb.toString());
+		
+	}
+
 
 	/**
 	 * 跳转至前段主页面
@@ -94,7 +129,10 @@ public class IndexController extends BaseController<User> {
 		}
 		
 		returnMap.put("menuList", menus);
-		returnMap.put("sessionAdminName", request.getSession().getAttribute(Const.SESSION_ADMIN));
+		String token = MyCookie.getCookie(Const.COOKIE_TOKEN, false, request);
+		User user = (User) cacheService.getObj(Const.CACHE_USER + token);
+
+		returnMap.put("sessionAdminName", user == null? "": user.getUserName());
 		return new JsonResult(1, returnMap);
 	}
 	
@@ -146,8 +184,9 @@ public class IndexController extends BaseController<User> {
 		response.setContentType("image/jpeg");
 		ServletOutputStream out = response.getOutputStream();
 		ValidateCodeService vservice = new ValidateCodeService();
-		request.getSession().setAttribute(Const.SESSION_IMG_CODE, vservice.getCode());
-		request.getSession().setAttribute(Const.SESSION_IMGCODE_TIMES, "0");
+		String uuid = MyCookie.getCookie(Const.COOKIE_UUID, false, request);
+		cacheService.setStr(Const.CACHE_IMGCODE + uuid, vservice.getCode() , 10 * 60);
+		cacheService.setStr(Const.CACHE_IMGCODE_TIMES + uuid, "0" , 10 * 60);
 		try {
 			vservice.write(out);
 			out.flush();
@@ -160,10 +199,38 @@ public class IndexController extends BaseController<User> {
 	@RequestMapping("/frontSearch.do")
 	@ResponseBody
 	public JsonResult frontSearch(@RequestParam(defaultValue="") String keyword, @RequestParam(defaultValue = "1") Integer currentPage) throws Exception{
+		keyword = keyword.trim();
 		page.setCurrentPage(currentPage);
 		page.setSize(10);
 		List<SearchDto> searchResults = GetBeanBySetting.getSearchService().search(keyword, page);
 		returnMap.put("searchResults", searchResults);
+		
+		// 将搜索的内容记入内存
+		if(!MyString.isEmpty(keyword)){
+			@SuppressWarnings("unchecked")
+			ArrayList<String> searchWords = (ArrayList<String>) cacheService.getObj(Const.CACHE_SEARCH_WORDS);
+			if(searchWords == null){
+				searchWords = new ArrayList<String>();
+			}
+			// 如果已经存在，则将排序+1
+			if(searchWords.contains(keyword)){
+				int index = searchWords.indexOf(keyword);
+				if(index>0){
+					searchWords.remove(keyword);
+					searchWords.add(index-1, keyword);
+				}
+			}else{
+				// 最多存200个，超过200个，则移除最后一个，并将新搜索的词放在100
+				if(searchWords.size() >= 200){
+					searchWords.remove(199);
+					searchWords.add(100, keyword);
+				}else{
+					searchWords.add(keyword);
+				}
+			}
+			cacheService.setObj(Const.CACHE_SEARCH_WORDS, searchWords, -1);
+		}
+		
 		return new JsonResult(1, returnMap, page, 
 				Tools.getMap("crumbs", Tools.getCrumbs("搜索关键词:"+keyword,"void")));
 	}
