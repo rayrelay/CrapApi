@@ -13,6 +13,7 @@ import cn.crap.inter.dao.ISettingDao;
 import cn.crap.inter.service.ICacheService;
 import cn.crap.model.DataCenter;
 import cn.crap.model.Setting;
+import cn.crap.utils.Config;
 import cn.crap.utils.GetBeanBySetting;
 import cn.crap.utils.MyString;
 import cn.crap.utils.Tools;
@@ -28,7 +29,6 @@ public class CacheService implements ICacheService {
 	private static String cacheModuleKeyPre = "cache:model:";
 	public static String cacheSettingKeyPre = "cache:setting";
 	public static String cacheSettingList = "cache:settingList";
-	private static int cacheTime = 10 * 60; // 10分钟缓存
 	
 	@Override
 	public Object getObj(String key){
@@ -56,17 +56,10 @@ public class CacheService implements ICacheService {
 		Object obj = cacheDao.getObj(cacheSettingKeyPre , key);
 		
 		if(obj == null){
-			synchronized(key){
-				obj = cacheDao.getObj(cacheSettingKeyPre , key);
-				if( obj == null){
-					List<Setting> settings = settingDao.findByMap(Tools.getMap("key",key), null, null);
-					if(settings.size() > 0){
-						cacheDao.setObj(cacheSettingKeyPre, key, settings.get(0), cacheTime);
-						return settings.get(0);
-					}
-				}else{
-					return (Setting) obj;
-				}
+			List<Setting> settings = settingDao.findByMap(Tools.getMap("key",key), null, null);
+			if(settings.size() > 0){
+				cacheDao.setObj(cacheSettingKeyPre, key, settings.get(0), Config.getCacheTime());
+				return settings.get(0);
 			}
 		}else{
 			return (Setting) obj;
@@ -81,17 +74,9 @@ public class CacheService implements ICacheService {
 		Object obj = cacheDao.getObj(cacheSettingList);
 		
 		if(obj == null){
-			synchronized(cacheSettingList){
-				obj = cacheDao.getObj(cacheSettingList);
-				if(obj == null){
-					List<Setting> settings = settingDao.findByMap(null, null, null);
-					cacheDao.setObj(cacheSettingList, settings, cacheTime);
-					return settings;
-				}else{
-					return (List<Setting>) obj;
-				}
-			}
-			
+			List<Setting> settings = settingDao.findByMap(null, null, null);
+			cacheDao.setObj(cacheSettingList, settings, Config.getCacheTime());
+			return settings;
 		}else{
 			return (List<Setting>) obj;
 		}
@@ -100,28 +85,18 @@ public class CacheService implements ICacheService {
 	@Override
 	@Transactional
 	public DataCenter getModule(String moduleId){
-		if(moduleId != null && moduleId.equals("0")){
-			return new DataCenter("0", "顶级项目");
-		}
 		if(MyString.isEmpty(moduleId)){
 			return new DataCenter();
 		}
 		
 		Object obj = cacheDao.getObj(cacheModuleKeyPre + moduleId);
 		if(obj == null){
-			synchronized(moduleId){
-				obj = cacheDao.getObj(cacheModuleKeyPre + moduleId);
-				if(obj == null){
-					DataCenter module = dataCenterDao.get(moduleId);
-					if(module == null)
-						module = new DataCenter();
-					cacheDao.setObj(cacheModuleKeyPre + moduleId, module, cacheTime);
-					return module;
-				}else{
-					return (DataCenter) obj;
-				}
+			DataCenter module = dataCenterDao.get(moduleId);
+			if(module == null)
+				module = new DataCenter();
+			cacheDao.setObj(cacheModuleKeyPre + moduleId, module, Config.getCacheTime());
+			return module;
 				
-			}
 		}
 		return (DataCenter) obj;
 	}

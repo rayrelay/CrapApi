@@ -1,18 +1,15 @@
-package cn.crap.controller;
+package cn.crap.controller.front;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -25,64 +22,36 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import cn.crap.dto.ErrorDto;
 import cn.crap.dto.ParamDto;
 import cn.crap.dto.ResponseParamDto;
-import cn.crap.dto.SearchDto;
+import cn.crap.enumeration.DataCeneterType;
 import cn.crap.framework.JsonResult;
 import cn.crap.framework.MyException;
-import cn.crap.framework.auth.AuthPassport;
 import cn.crap.framework.base.BaseController;
 import cn.crap.inter.service.ICacheService;
-import cn.crap.inter.service.IErrorService;
-import cn.crap.inter.service.IInterfaceService;
 import cn.crap.inter.service.IDataCenterService;
-import cn.crap.model.Error;
-import cn.crap.model.Interface;
-import cn.crap.model.User;
+import cn.crap.inter.service.IInterfaceService;
 import cn.crap.model.DataCenter;
+import cn.crap.model.Interface;
+import cn.crap.utils.Config;
 import cn.crap.utils.Const;
-import cn.crap.utils.DateFormartUtil;
-import cn.crap.utils.GetBeanBySetting;
 import cn.crap.utils.Html2Pdf;
 import cn.crap.utils.HttpPostGet;
-import cn.crap.utils.MyCookie;
 import cn.crap.utils.MyString;
 import cn.crap.utils.Tools;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 @Scope("prototype")
 @Controller
-@RequestMapping("/interface")
-public class InterfaceController extends BaseController<Interface>{
+@RequestMapping("/front/interface")
+public class FrontInterfaceController extends BaseController<Interface>{
 
 	@Autowired
 	private IInterfaceService interfaceService;
 	@Autowired
 	private IDataCenterService dataCenterService;
 	@Autowired
-	private IErrorService errorService;
-	@Autowired
 	private ICacheService cacheService;
 	
-	@RequestMapping("/list.do")
-	@ResponseBody
-	@AuthPassport
-	public JsonResult list(@ModelAttribute Interface interFace,
-			@RequestParam(defaultValue = "1") Integer currentPage){
-		return interfaceService.getInterfaceList(page, map, interFace, currentPage);
-	}
-
-	@RequestMapping("/detail.do")
-	@ResponseBody
-	@AuthPassport
-	public JsonResult detail(@ModelAttribute Interface interFace) {
-		if(!interFace.getId().equals(Const.NULL_ID)){
-			model= interfaceService.get(interFace.getId());
-		}else{
-			model = new Interface();
-			model.setModuleId(interFace.getModuleId());
-		}
-		return new JsonResult(1, model);
-	}
-	
-
 	@RequestMapping("/detail/pdf.do")
 	public String pdf(@ModelAttribute Interface interFace) throws Exception {
 		interFace = interfaceService.get(interFace.getId());
@@ -132,29 +101,33 @@ public class InterfaceController extends BaseController<Interface>{
         br.close();
 	}
 	
-	@RequestMapping("/copy.do")
-	@ResponseBody
-	@AuthPassport
-	public JsonResult copy(@ModelAttribute Interface interFace) throws MyException, IOException {
-		if(interfaceService.getCount(Tools.getMap("url",interFace.getUrl()))>0){
-			throw new MyException("000004");
-		}
-		interFace.setId(null);
-		interfaceService.save(interFace);
-		GetBeanBySetting.getSearchService().update(interFace.toSearchDto());
-		return new JsonResult(1, interFace);
-	}
 	
-	@RequestMapping("/webList.do")
+	@RequestMapping("/list.do")
 	@ResponseBody
 	public JsonResult webList(@ModelAttribute Interface interFace,
 			@RequestParam(defaultValue = "1") Integer currentPage,String password,String visitCode) throws MyException{
-		DataCenter dc = dataCenterService.get(interFace.getModuleId());
-		Tools.canVisitModule(dc.getPassword(), password, visitCode, request);
-		return interfaceService.getInterfaceList(page, map,interFace, currentPage);
+		// 查询公开和推荐的接口
+		if(!Tools.moduleIdIsLegal(interFace.getModuleId())){
+			@SuppressWarnings("unchecked")
+			List<String> moduleIds = (List<String>) cacheService.getObj(Const.CACHE_TUIJIAN_OPEN_MODULEIDS);
+			if(moduleIds == null){
+				List<Byte> statuss = new ArrayList<Byte>();
+				statuss.add(Byte.valueOf("1"));
+				statuss.add(Byte.valueOf("3"));
+				moduleIds = dataCenterService.getListByStatuss(statuss, DataCeneterType.MODULE.name(), null);
+				cacheService.setObj(Const.CACHE_TUIJIAN_OPEN_MODULEIDS, moduleIds, Config.getCacheTime());
+			}
+			return interfaceService.getInterfaceList(page, moduleIds ,interFace, currentPage);
+		}else{
+			DataCenter dc = dataCenterService.get(interFace.getModuleId());
+			Tools.canVisitModule(dc.getPassword(), password, visitCode, request);
+			
+			return interfaceService.getInterfaceList(page, null,interFace, currentPage);
+		}
+		
 	}
 
-	@RequestMapping("/webDetail.do")
+	@RequestMapping("/detail.do")
 	@ResponseBody
 	public JsonResult webDetail(@ModelAttribute Interface interFace,String password,String visitCode) throws MyException {
 		interFace = interfaceService.get(interFace.getId());
@@ -167,103 +140,11 @@ public class InterfaceController extends BaseController<Interface>{
 					Tools.getMap("moduleId",interFace.getModuleId(),"interfaceName",interFace.getInterfaceName(),"version|<>",interFace.getVersion()), null, null);
 			return new JsonResult(1, interFace, null, 
 					Tools.getMap("versions", versions, "crumbs",
-							Tools.getCrumbs( cacheService.getModuleName(interFace.getModuleId()), "web.do#/webInterface/list/"+interFace.getModuleId() +"/" +cacheService.getModuleName(interFace.getModuleId())
-							,interFace.getInterfaceName() , "void")));
+							Tools.getCrumbs( cacheService.getModuleName(interFace.getModuleId()), "#/front/interface/list/"+interFace.getModuleId() +"/" +cacheService.getModuleName(interFace.getModuleId())
+							,interFace.getInterfaceName() , "void"), "module",cacheService.getModule(interFace.getModuleId()) ));
 		}else{
 			throw new MyException("000012");
 		}
-	}
-	
-	/**
-	 * 根据参数生成请求示例
-	 * @param interFace
-	 * @return
-	 */
-	@RequestMapping("/getRequestExam.do")
-	@ResponseBody
-	public JsonResult getRequestExam(@ModelAttribute Interface interFace) {
-		interfaceService.getInterFaceRequestExam(interFace);
-		return new JsonResult(1, interFace);
-	}
-
-	@RequestMapping("/addOrUpdate.do")
-	@ResponseBody
-	@AuthPassport(authority=Const.AUTH_INTERFACE)
-	public JsonResult addOrUpdate(
-			@ModelAttribute Interface interFace) throws IOException, MyException {
-		if(MyString.isEmpty(interFace.getUrl()))
-			return new JsonResult(new MyException("000005"));
-		interFace.setUrl(interFace.getUrl().trim());
-		
-		/**
-		 * 根据选着的错误码id，组装json字符串
-		 */
-		String errorIds = interFace.getErrorList();
-		if (errorIds != null && !errorIds.equals("")) {
-			map = Tools.getMap("errorCode|in", Tools.getIdsFromField(errorIds));
-
-			DataCenter dc = dataCenterService.get(interFace
-					.getModuleId());
-			while (dc != null && !dc.getParentId().equals("0")) {
-				dc = dataCenterService.get(dc.getParentId());
-			}
-			map.put("moduleId", dc.getId());
-			List<Error> errors = errorService.findByMap(map, null,
-					null);
-			interFace.setErrors(JSONArray.fromObject(errors).toString());
-		}else{
-			interFace.setErrors("[]");
-		}
-		String token = MyCookie.getCookie(Const.COOKIE_TOKEN, false, request);
-		User user = (User) cacheService.getObj(Const.CACHE_USER + token);
-		interFace.setUpdateBy("userName："+user.getUserName()+" | trueName："+ user.getTrueName());
-		interFace.setUpdateTime(DateFormartUtil.getDateByFormat(DateFormartUtil.YYYY_MM_DD_HH_mm));
-		//请求示例为空，则自动添加
-		if(MyString.isEmpty(interFace.getRequestExam())){
-			interfaceService.getInterFaceRequestExam(interFace);
-		}
-		if (!MyString.isEmpty(interFace.getId())) {
-			if( interfaceService.getCount(Tools.getMap("url",interFace.getUrl(),"id|!=",interFace.getId())) >0 ){
-				throw new MyException("000004");
-			}
-			interfaceService.update(interFace, "接口", "");
-			GetBeanBySetting.getSearchService().add(interFace.toSearchDto());
-		} else {
-			interFace.setId(null);
-			if(interfaceService.getCount(Tools.getMap("url",interFace.getUrl()))>0){
-				return new JsonResult(new MyException("000004"));
-			}
-			interfaceService.save(interFace);
-			GetBeanBySetting.getSearchService().add(interFace.toSearchDto());
-		}
-		return new JsonResult(1, interFace);
-	}
-
-	@RequestMapping("/delete.do")
-	@ResponseBody
-	public JsonResult delete(@ModelAttribute Interface interFace) throws MyException, IOException {
-		interFace = interfaceService.get(interFace.getId());
-		Tools.hasAuth(Const.AUTH_INTERFACE, interFace.getModuleId());
-		interfaceService.delete(interFace, "接口", "");
-		GetBeanBySetting.getSearchService().delete(new SearchDto(interFace.getId()));
-		return new JsonResult(1, null);
-	}
-
-	@RequestMapping("/changeSequence.do")
-	@ResponseBody
-	@AuthPassport
-	@Override
-	public JsonResult changeSequence(@RequestParam String id,@RequestParam String changeId) {
-		Interface change = interfaceService.get(changeId);
-		model = interfaceService.get(id);
-		int modelSequence = model.getSequence();
-		
-		model.setSequence(change.getSequence());
-		change.setSequence(modelSequence);
-		
-		interfaceService.update(model);
-		interfaceService.update(change);
-		return new JsonResult(1, null);
 	}
 	
 	@RequestMapping("/debug.do")

@@ -1,4 +1,4 @@
-package cn.crap.controller;
+package cn.crap.controller.back;
 
 import java.util.List;
 
@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import cn.crap.dto.LoginInfoDto;
 import cn.crap.framework.JsonResult;
 import cn.crap.framework.MyException;
 import cn.crap.framework.auth.AuthPassport;
@@ -25,7 +27,7 @@ import cn.crap.utils.Tools;
 @Scope("prototype")
 @Controller
 @RequestMapping("/user")
-public class UserController extends BaseController<User>{
+public class BackUserController extends BaseController<User>{
 
 	@Autowired
 	private IUserService userService;
@@ -34,6 +36,7 @@ public class UserController extends BaseController<User>{
 	
 	@RequestMapping("/list.do")
 	@ResponseBody
+	@AuthPassport(authority=Const.AUTH_USER)
 	public JsonResult list(@ModelAttribute User user,@RequestParam(defaultValue="1") Integer currentPage){
 		page.setCurrentPage(currentPage);
 		map = Tools.getMap("trueName|like",user.getTrueName());
@@ -41,6 +44,7 @@ public class UserController extends BaseController<User>{
 	}
 	@RequestMapping("/detail.do")
 	@ResponseBody
+	@AuthPassport(authority=Const.AUTH_USER)
 	public JsonResult detail(@ModelAttribute User user){
 		if(!user.getId().equals(Const.NULL_ID)){
 			user= userService.get(user.getId());
@@ -71,19 +75,21 @@ public class UserController extends BaseController<User>{
 			temp = userService.get(user.getId());
 		}
 		String token = MyCookie.getCookie(Const.COOKIE_TOKEN, false, request);
-		User cacheUser = (User) cacheService.getObj(Const.CACHE_USER + token);
-		// 如果不是最高管理员，不允许修改权限、角色
+		LoginInfoDto cacheUser = (LoginInfoDto) cacheService.getObj(Const.CACHE_USER + token);
+		// 如果不是最高管理员，不允许修改权限、角色、类型
 		if((","+cacheUser.getRoleId()).indexOf(","+Const.SUPER+",") < 0){
 			if(temp != null){
 				user.setAuth(temp.getAuth());
 				user.setAuthName(temp.getAuthName());
 				user.setRoleId(temp.getRoleId());
 				user.setRoleName(temp.getRoleName());
+				user.setType(temp.getType());
 			}else{
 				user.setAuth("");
 				user.setAuthName("");
 				user.setRoleId("");
 				user.setRoleName("");
+				user.setType(Byte.valueOf("1"));// 普通用户
 			}
 			
 		}
@@ -110,13 +116,5 @@ public class UserController extends BaseController<User>{
 	public JsonResult delete(@ModelAttribute User user){
 		userService.delete(user);
 		return new JsonResult(1,null);
-	}
-
-	@RequestMapping("/changeSequence.do")
-	@ResponseBody
-	@AuthPassport
-	@Override
-	public JsonResult changeSequence(@RequestParam String id,@RequestParam String changeId) {
-		return null;
 	}
 }

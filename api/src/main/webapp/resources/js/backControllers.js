@@ -36,7 +36,7 @@ mainModule.controller('detailCtrl', function($scope, $http, $state, $stateParams
  */
 mainModule.controller('backInit', function($rootScope,$scope, $http, $state, $stateParams,$http ,httpService) {
 	$scope.getData = function(page,setPwd) {
-		var params = "iUrl=backInit.do|iLoading=fase"; //  表示查询所有
+		var params = "iUrl=back/init.do|iLoading=fase"; //  表示查询所有
 		httpService.callHttpMethod($http,params).success(function(result) {
 			var isSuccess = httpSuccess(result,'iLoading=false');
 			if(!isJson(result)||isSuccess.indexOf('[ERROR]') >= 0){
@@ -49,6 +49,7 @@ mainModule.controller('backInit', function($rootScope,$scope, $http, $state, $st
 				$rootScope.sessionAdminName = result.data.sessionAdminName;
 				$rootScope.sessionAdminRoleIds = result.data.sessionAdminRoleIds;
 				$rootScope.sessionAdminId =result.data.sessionAdminId;
+				$rootScope.errorTips = result.data.errorTips;
 			}
 		});
     };
@@ -62,12 +63,20 @@ mainModule.controller('backInit', function($rootScope,$scope, $http, $state, $st
     	}
     	return false;
     }
+    // 是否为用户
+    $scope.isUser = function (){
+    	var auth = $("#sessionAuth").val();
+    	if(auth.indexOf(',ADMIN,')<0){
+    		return true;
+    	}
+    	return false;
+    }
     /***********************判断菜单中的roleIds是否包含用户角色中的任意一个role************/
 	$scope.canSeeMenu = function(id,type){
 		if(!id||id==""||type!="BACK")
 			return false;
 		var auth = $("#sessionAuth").val();
-		if((","+auth+",").indexOf(","+id+",")>=0)
+		if((","+auth+",").indexOf(","+id+",")>=0 && (","+auth+",").indexOf(",ADMIN,")>=0)
 			return true;
 		return false;
 	}
@@ -84,9 +93,21 @@ mainModule.controller('backInit', function($rootScope,$scope, $http, $state, $st
 			 }
 		});
 	}
+	$scope.closeErrorTips = function(){
+		var params = "iUrl=back/closeErrorTips.do|iLoading=FLOAT";
+		httpService.callHttpMethod($http,params).success(function(result) {
+			var isSuccess = httpSuccess(result,'iLoading=FLOAT');
+			if(!isJson(result)||isSuccess.indexOf('[ERROR]') >= 0){
+				 $rootScope.error = isSuccess.replace('[ERROR]', '');
+			 }else{
+				 $rootScope.error = null;
+				 $rootScope.errorTips = null;
+			 }
+		});
+	}
 	$scope.loginOut = function(){
-		callAjaxByName("iUrl=loginOut.do|isHowMethod=updateDiv|iLoading=false|ishowMethod=doNothing|iAsync=false");
-		location.href="web.do#/webWebPage/detail/PAGE/WELCOME";
+		callAjaxByName("iUrl=back/loginOut.do|isHowMethod=updateDiv|iLoading=false|ishowMethod=doNothing|iAsync=false");
+		location.href="index.do#/webWebPage/detail/PAGE/WELCOME";
 	}
 	$scope.createEditor = function(id,field){
 		createKindEditor(id,field);
@@ -97,11 +118,11 @@ mainModule.controller('backInit', function($rootScope,$scope, $http, $state, $st
 mainModule.controller('preLoginCtrl', function($rootScope,$scope, $http, $state, $stateParams,$http ,httpService) {
 	$scope.getData = function() {
 		if($rootScope.model && $rootScope.model.sessionAdminName){
-			window.location.href="index.do";
+			window.location.href="admin.do";
 		}else if($rootScope.model && $rootScope.model.tipMessage){
 			showMessage('warnMessage', $rootScope.model.tipMessage,true,3);
 		}else{
-			var params = "iUrl=preLogin.do|iLoading=FLOAT";
+			var params = "iUrl=back/preLogin.do|iLoading=FLOAT";
 			httpService.callHttpMethod($http,params).success(function(result) {
 				var isSuccess = httpSuccess(result,'iLoading=FLOAT','0');
 				if(!isJson(result)||isSuccess.indexOf('[ERROR]') >= 0){
@@ -186,9 +207,9 @@ mainModule.controller('roleCtrl', function($rootScope,$scope, $http, $state, $st
 });
 
 /**************************错误码列表****************************/
-mainModule.controller('errorCtrl', function($rootScope,$scope, $http, $state, $stateParams,$http ,httpService) {
+mainModule.controller('backErrorCtrl', function($rootScope,$scope, $http, $state, $stateParams,$http ,httpService) {
 	$scope.getData = function(page) {
-		var params = "iUrl=error/list.do|iLoading=FLOAT|iParams=&errorMsg=" + $("#searchMsg").val()+"&errorCode=" + $("#searchCode").val();
+		var params = "iUrl=back/error/list.do|iLoading=FLOAT|iParams=&errorMsg=" + $("#searchMsg").val()+"&errorCode=" + $("#searchCode").val();
 		if($("#searchModuleId").val()!=null&&$("#searchModuleId").val()!=''){
 			params += "&moduleId=" + $("#searchModuleId").val();
 			$stateParams.searchModuleId = $("#searchModuleId").val();
@@ -201,7 +222,7 @@ mainModule.controller('errorCtrl', function($rootScope,$scope, $http, $state, $s
     $scope.getData();
 });
 /**************************后端接口列表****************************/
-mainModule.controller('interfaceCtrl', function($rootScope,$scope, $http, $state, $stateParams,$http ,httpService) {
+mainModule.controller('backInterfaceCtrl', function($rootScope,$scope, $http, $state, $stateParams,$http ,httpService) {
 	$scope.getData = function(page) {
 		var params = "";
 		if($("#interfaceName").val()!=null&&$("#interfaceName").val()!=''){
@@ -213,7 +234,7 @@ mainModule.controller('interfaceCtrl', function($rootScope,$scope, $http, $state
 		if(params==""){
 			params +="&moduleId="+ $stateParams.moduleId;
 		}
-		params = "iUrl=interface/list.do|iLoading=FLOAT|iParams="+params;
+		params = "iUrl=back/interface/list.do|iLoading=FLOAT|iParams="+params;
 		$rootScope.getBaseData($scope,$http,params,page);
     };
     $scope.getData();
@@ -221,7 +242,7 @@ mainModule.controller('interfaceCtrl', function($rootScope,$scope, $http, $state
 
 mainModule.controller('sourceCtrl', function($rootScope,$scope, $http, $state, $stateParams,$http ,httpService) {
 	$scope.getData = function(page) {
-		var params = "iUrl=source/list.do|iLoading=FLOAT|iParams=&name="+$stateParams.name+"&directoryId="+$stateParams.directoryId;
+		var params = "iUrl=back/source/list.do|iLoading=FLOAT|iParams=&name="+$stateParams.name+"&directoryId="+$stateParams.directoryId;
 		$rootScope.getBaseData($scope,$http,params,page);
     };
     $scope.getData();
@@ -229,7 +250,7 @@ mainModule.controller('sourceCtrl', function($rootScope,$scope, $http, $state, $
 
 mainModule.controller('interfaceDetailCtrl', function($rootScope,$scope, $http, $state, $stateParams,$http ,httpService) {
     $scope.getRequestExam = function(editerId,targetId,item,tableId) {
-    	var params = "iUrl=interface/getRequestExam.do|iLoading=FLOAT|iPost=true|iParams=&"+$.param($rootScope.model);
+    	var params = "iUrl=back/interface/getRequestExam.do|iLoading=FLOAT|iPost=true|iParams=&"+$.param($rootScope.model);
 		httpService.callHttpMethod($http,params).success(function(result) {
 			var isSuccess = httpSuccess(result,'iLoading=FLOAT');
 			if(!isJson(result)||isSuccess.indexOf('[ERROR]') >= 0){

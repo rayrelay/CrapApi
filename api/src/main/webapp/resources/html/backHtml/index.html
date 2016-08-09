@@ -32,13 +32,13 @@
 						class="icon-bar"></span> <span class="icon-bar"></span> <span
 						class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand pt10" href="web.do" target="_blank">
+				<a class="navbar-brand pt10" href="index.do" target="_blank">
 					<img class="h30" ng-src="{{settings.LOGO}}" />
 				</a>
 			</div>
 			<div id="navbar" class="navbar-collapse collapse">
 				<ul class="nav navbar-nav navbar-right mr20">
-						<li><a href="index.do#/profile" ng-click="profile(sessionAdminId)"><i class="iconfont f14 mt-5">&#xe603;</i>&nbsp;&nbsp;<span ng-bind="sessionAdminName"></span></a></li>
+						<li><a href="#/profile" ng-click="profile(sessionAdminId)"><i class="iconfont f14 mt-5">&#xe603;</i>&nbsp;&nbsp;<span ng-bind="sessionAdminName"></span></a></li>
 						<li><a href="javascript:void(0)" ng-click="loginOut()"><i class="iconfont f16 mt-5">&#xe609;</i>&nbsp;&nbsp;注销</a></li>
 				</ul>
 			</div>
@@ -66,37 +66,37 @@
 							</div>
 							<div id="panel1" class="panel-collapse BGEEE collapse in">
 								<div class="panel-body b0 p0">
-									<a class="menu-a" target="_self" href="index.do#/menu/list/0/FRONT/一级菜单" onclick="selectButton(this,'menu-a')">菜单管理</a>
+									<a class="menu-a" target="_self" href="#/menu/list/0/FRONT/一级菜单" onclick="selectButton(this,'menu-a')">菜单管理</a>
 								</div>
 								<div class="panel-body b0 p0">
-									<a class="menu-a" target="_self" href="index.do#/interface/list/0/根目录" onclick="selectButton(this,'menu-a')">项目&模块&接口管理</a>
+									<a class="menu-a" target="_self" href="#/back/interface/list/top/根目录" onclick="selectButton(this,'menu-a')">项目&模块&接口管理</a>
 								</div>
 								<div class="panel-body b0 p0">
-									<a class="menu-a" target="_self" href="index.do#/source/list/0/无" onclick="selectButton(this,'menu-a')">DOC、PDF 等文档管理</a>
+									<a class="menu-a" target="_self" href="#/back/source/list/0/无" onclick="selectButton(this,'menu-a')">DOC、PDF 等文档管理</a>
 								</div>
 								<div class="panel-body b0 p0">
-									<a class="menu-a" target="_self" href="index.do#/user/list" onclick="selectButton(this,'menu-a')">用户管理</a>
+									<a class="menu-a" target="_self" href="#/user/list" onclick="selectButton(this,'menu-a')">用户管理</a>
 								</div>
 								<div class="panel-body b0 p0">
-									<a class="menu-a" target="_self" href="index.do#/role/list" onclick="selectButton(this,'menu-a')">角色管理</a>
+									<a class="menu-a" target="_self" href="#/role/list" onclick="selectButton(this,'menu-a')">角色管理</a>
 								</div>
 								<div class="panel-body b0 p0">
-									<a class="menu-a" target="_self" href="index.do#/error/list" onclick="selectButton(this,'menu-a')">错误码管理</a>
+									<a class="menu-a" target="_self" href="#/error/list" onclick="selectButton(this,'menu-a')">错误码管理</a>
 								</div>
 								<div class="panel-body b0 p0">
-									<a class="menu-a" target="_self" href="index.do#/setting/list/null" onclick="selectButton(this,'menu-a')">系统设置管理</a>
+									<a class="menu-a" target="_self" href="#/setting/list/null" onclick="selectButton(this,'menu-a')">系统设置管理</a>
 								</div>
 								<div class="panel-body b0 p0">
-									<a class="menu-a" target="_self" href="index.do#/webPage/list/DICTIONARY" onclick="selectButton(this,'menu-a')">数据字典管理</a>
+									<a class="menu-a" target="_self" href="#/webPage/list/DICTIONARY" onclick="selectButton(this,'menu-a')">数据字典管理</a>
 								</div>
 								<div class="panel-body b0 p0">
-									<a class="menu-a" target="_self" href="index.do#/webPage/list/PAGE" onclick="selectButton(this,'menu-a')">页面管理</a>
+									<a class="menu-a" target="_self" href="#/webPage/list/PAGE" onclick="selectButton(this,'menu-a')">页面管理</a>
 								</div>
 								<div class="panel-body b0 p0">
-									<a class="menu-a" target="_self" href="index.do#/webPage/list/ARTICLE" onclick="selectButton(this,'menu-a')">文章管理</a>
+									<a class="menu-a" target="_self" href="#/webPage/list/ARTICLE" onclick="selectButton(this,'menu-a')">文章管理</a>
 								</div>
 								<div class="panel-body b0 p0">
-									<a class="menu-a" target="_self" href="index.do#/log/list" onclick="selectButton(this,'menu-a')">日志管理</a>
+									<a class="menu-a" target="_self" href="#/log/list" onclick="selectButton(this,'menu-a')">日志管理</a>
 								</div>
 							</div>
 						</div>
@@ -115,6 +115,23 @@
 						</div>
 					</div>
 					
+					<div class="panel panel-info no-radius b0 mt0 left-menu-border-top" ng-if="isUser()">
+						<div class="panel-heading left-menu-bg no-radius" data-parent="#accordion">
+							<div class="a cursor" data-toggle="collapse" data-parent="#accordion" href="#panel-myproject">
+								<div class="f14 mt-3 fl mr10"><i class="iconfont">&#xe61f;</i></div> 
+								<span class="hidden-xs">我的项目</span> 
+							</div>
+						</div>
+						<div id="panel-myproject" class="panel-collapse BGEEE collapse in">
+							<div class="panel-body b0 p0">
+								<a class="menu-a" target="_self" ng-href="#/back/interface/list/privateModule/我的项目" onclick="selectButton(this,'menu-a')">我的项目</a>
+							</div>
+							<div class="panel-body b0 p0">
+								<a class="menu-a" target="_self" ng-href="#/error/list" onclick="selectButton(this,'menu-a')">错误码管理</a>
+							</div>
+						</div>
+					</div>
+					
 					<div class="panel panel-info no-radius b0 mt0 left-menu-border-top">
 						<div class="panel-heading left-menu-bg no-radius" data-parent="#accordion">
 							<div class="a cursor" data-toggle="collapse" data-parent="#panel3"></div>
@@ -127,10 +144,6 @@
 
 				<!-- End:left -->
 				
-				
-				
-				
-				
 				<div class="col-xs-9 col-sm-10 p0 h mah ofy-a">
 					<div class="BGFFF m20 BGFFF p10 r5">
 						<div class="col-xs-12 f16 fb p0 mb5" ng-if="error">
@@ -138,6 +151,17 @@
 								<span class="glyphicon glyphicon-remove"></span>
 								<span ng-bind="error"></span>
 							</button>
+						</div>
+						<div class="col-xs-12 f16 fb p0 mb5" ng-if="errorTips">
+							<button type="button" class="btn btn-danger btn-xs break-word">
+								<span class="glyphicon glyphicon-remove"></span>
+								<span ng-bind="errorTips"></span>
+							</button>
+							<button type="button" class="btn btn-default btn-xs" ng-if="isSupperAdmin()" ng-click="closeErrorTips()">
+								<span class="glyphicon glyphicon-remove"></span>
+								<span> 删除提示</span>
+							</button>
+							
 						</div>
 						<div ui-view="main"></div>
 					</div>

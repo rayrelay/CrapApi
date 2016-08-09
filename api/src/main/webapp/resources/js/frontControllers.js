@@ -84,7 +84,7 @@ webModule.controller('webSourceCtrl', function($rootScope,$scope, $http, $state,
 	$scope.getData = function(page,setPwd) {
 		//setPwd不为空，表示用户输入了密码，需要记录至cookie中
 		if(setPwd) setPassword();
-		var params = "iUrl=source/webList.do|iLoading=FLOAT|iParams=&directoryName="+$stateParams.directoryName+"&directoryId="+$stateParams.directoryId;
+		var params = "iUrl=back/source/webList.do|iLoading=FLOAT|iParams=&directoryName="+$stateParams.directoryName+"&directoryId="+$stateParams.directoryId;
 		params +="&password="+unescapeAndDecode('password');
 		params +="&visitCode="+unescapeAndDecode('visitCode');
 		$rootScope.getBaseData($scope,$http,params,page);
@@ -96,11 +96,11 @@ webModule.controller('webSourceCtrl', function($rootScope,$scope, $http, $state,
  * 接口详情
  * 不需要打开模态框，所以不能调用$rootScope中的getBaseData()
  */
-webModule.controller('webInterfaceDetailCtrl', function($rootScope,$scope, $http, $state, $stateParams,$http ,httpService) {
+webModule.controller('frontInterfaceDetailCtrl', function($rootScope,$scope, $http, $state, $stateParams,$http ,httpService) {
 	$scope.getData = function(page,setPwd) {
 		//setPwd不为空，表示用户输入了密码，需要记录至cookie中
 		if(setPwd) setPassword();
-		var params = "iUrl=interface/webDetail.do|iLoading=FLOAT|iParams=&id="+$stateParams.id;
+		var params = "iUrl=front/interface/detail.do|iLoading=FLOAT|iParams=&id="+$stateParams.id;
 		params +="&password="+unescapeAndDecode('password');
 		params +="&visitCode="+unescapeAndDecode('visitCode');
 		httpService.callHttpMethod($http,params).success(function(result) {
@@ -133,7 +133,7 @@ webModule.controller('webInterfaceDetailCtrl', function($rootScope,$scope, $http
     $scope.getDebugResult= function() {
     	$rootScope.model.headers = getParamFromTable("debugHeader");
 		$rootScope.model.params =getParamFromTable("debugParams");
-    	var params = "iUrl=interface/debug.do|iLoading=FLOAT|iPost=POST|iParams=&"+$.param($rootScope.model);
+    	var params = "iUrl=front/interface/debug.do|iLoading=FLOAT|iPost=POST|iParams=&"+$.param($rootScope.model);
 		httpService.callHttpMethod($http,params).success(function(result) {
 			var isSuccess = httpSuccess(result,'iLoading=FLOAT');
 			if(!isJson(result)||isSuccess.indexOf('[ERROR]') >= 0){
@@ -151,7 +151,7 @@ webModule.controller('webInterfaceDetailCtrl', function($rootScope,$scope, $http
 /**
  * 接口列表
  */
-webModule.controller('webInterfaceCtrl', function($rootScope,$scope, $http, $state, $stateParams,$http ,httpService) {
+webModule.controller('frontInterfaceCtrl', function($rootScope,$scope, $http, $state, $stateParams,$http ,httpService) {
 	$scope.getData = function(page,setPwd) {
 		//setPwd不为空，表示用户输入了密码，需要记录至cookie中
 		if(setPwd) setPassword();
@@ -169,7 +169,30 @@ webModule.controller('webInterfaceCtrl', function($rootScope,$scope, $http, $sta
 		}
 		params +="&password="+unescapeAndDecode('password');
 		params +="&visitCode="+unescapeAndDecode('visitCode');
-		params = "iUrl=interface/webList.do|iLoading=FLOAT|iParams="+params;
+		params = "iUrl=front/interface/list.do|iLoading=FLOAT|iParams="+params;
+		$rootScope.getBaseData($scope,$http,params,page);
+    };
+    $scope.getData();
+});
+/**
+ * 项目列表
+ */
+webModule.controller('frontProjectCtrl', function($rootScope,$scope, $http, $state, $stateParams,$http ,httpService) {
+	$scope.getData = function(page,setPwd) {
+		if($stateParams.projectId){
+			$rootScope.projectId= $stateParams.projectId;// 将项目主页存储至根对象上
+			addCookie("projectId", $stateParams.projectId);// 将项目主页存储至cookie中
+		}else{
+			$rootScope.projectId = getCookie("projectId");
+			if(!$stateParams.moduleId)
+				$stateParams.moduleId= getCookie("projectId");
+		}
+		//setPwd不为空，表示用户输入了密码，需要记录至cookie中
+		if(setPwd) setPassword();
+		var params ="&moduleId="+ $stateParams.moduleId;
+		params +="&password="+unescapeAndDecode('password');
+		params +="&visitCode="+unescapeAndDecode('visitCode');
+		params = "iUrl=front/project/list.do|iLoading=FLOAT|iParams="+params;
 		$rootScope.getBaseData($scope,$http,params,page);
     };
     $scope.getData();
@@ -180,7 +203,7 @@ webModule.controller('webInterfaceCtrl', function($rootScope,$scope, $http, $sta
  */
 webModule.controller('fontInit', function($rootScope,$scope, $http, $state, $stateParams,$http ,httpService) {
 	$scope.getData = function(page,setPwd) {
-		var params = "iUrl=frontInit.do|iLoading=FLOAT"; //  表示查询所有
+		var params = "iUrl=front/init.do|iLoading=FLOAT"; //  表示查询所有
 		httpService.callHttpMethod($http,params).success(function(result) {
 			var isSuccess = httpSuccess(result,'iLoading=FLOAT');
 			if(!isJson(result)||isSuccess.indexOf('[ERROR]') >= 0){
@@ -192,7 +215,7 @@ webModule.controller('fontInit', function($rootScope,$scope, $http, $state, $sta
 		});
     };
     $scope.loginOut = function(){
-		callAjaxByName("iUrl=loginOut.do|isHowMethod=updateDiv|iLoading=false|ishowMethod=doNothing|iAsync=false");
+		callAjaxByName("iUrl=back/loginOut.do|isHowMethod=updateDiv|iLoading=false|ishowMethod=doNothing|iAsync=false");
 		location.reload();
 	}
     $scope.getData();
@@ -206,5 +229,21 @@ webModule.controller('frontSearchCtrl', function($rootScope,$scope, $http, $stat
     };
     $scope.getData();
 });
+/**************************错误码列表****************************/
+mainModule.controller('frontErrorCtrl', function($rootScope,$scope, $http, $state, $stateParams,$http ,httpService) {
+	$scope.getData = function(page) {
+		var params = "iUrl=front/error/list.do|iLoading=FLOAT|iParams=&errorMsg=" + $("#searchMsg").val()+"&errorCode=" + $("#searchCode").val();
+		if($("#searchModuleId").val()!=null&&$("#searchModuleId").val()!=''){
+			params += "&moduleId=" + $("#searchModuleId").val();
+			$stateParams.searchModuleId = $("#searchModuleId").val();
+		}else if($stateParams.moduleId){
+			$stateParams.searchModuleId=$stateParams.moduleId;
+			params += "&moduleId=" + $stateParams.moduleId;
+		}
+		$rootScope.getBaseData($scope,$http,params,page);
+    };
+    $scope.getData();
+});
+
 
 

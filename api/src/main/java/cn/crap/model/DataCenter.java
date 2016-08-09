@@ -8,6 +8,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import org.hibernate.annotations.GenericGenerator;
 
+import cn.crap.enumeration.ModuleStatus;
 import cn.crap.framework.SpringContextHolder;
 import cn.crap.framework.base.BaseModel;
 import cn.crap.inter.service.ICacheService;
@@ -31,12 +32,14 @@ public class DataCenter extends BaseModel implements Serializable{
 	private byte canDelete;
 	private String type;
 	private String remark;
+	private String userId;
 	
 
 	public DataCenter(){};
 	public DataCenter(String parentId, String name) {
 		this.parentId = parentId;
 		this.name = name;
+		this.userId = "superAdmin";
 	}
 
 	@Column(name="password")
@@ -97,6 +100,20 @@ public class DataCenter extends BaseModel implements Serializable{
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
+	
+	@Column(name="userId")
+	public String getUserId() {
+		return userId;
+	}
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+	
+	@Transient
+	public String getStatusName(){
+		return ModuleStatus.getNameByValue(status+"");
+	}
+	
 	@Transient
 	public String getParentName(){
 		if(!MyString.isEmpty(parentId)){

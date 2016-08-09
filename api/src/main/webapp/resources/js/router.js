@@ -10,6 +10,9 @@
 app.config(function($stateProvider, $urlRouterProvider) {
 	if($("#sessionAuth").length>0){
 		$urlRouterProvider.otherwise('/webWebPage/detail/PAGE/ADMINHELP');
+	}
+	else if($("#projectId").length>0){// 项目主页
+		$urlRouterProvider.otherwise('/project');
 	}else{
 		$urlRouterProvider.otherwise('/webWebPage/detail/PAGE/WELCOME');
 	}
@@ -31,8 +34,8 @@ app.config(function($stateProvider, $urlRouterProvider) {
 				}
 			}
 		}
-	}).state('interfaceList', {
-		url : '/interface/list/:moduleId/:moduleName',
+	}).state('backInterfaceList', {
+		url : '/back/interface/list/:moduleId/:moduleName',
 		views : {
 			'main' : {
 				templateUrl : 'resources/html/backHtml/interfaceList.tpl.html'
@@ -47,7 +50,7 @@ app.config(function($stateProvider, $urlRouterProvider) {
 			}
 		}
 	}).state('sourceList', {
-		url : '/source/list/:directoryId/:directoryName',
+		url : '/back/source/list/:directoryId/:directoryName',
 		views : {
 			'main' : {
 				templateUrl : 'resources/html/backHtml/sourceList.tpl.html'
@@ -224,25 +227,25 @@ app.config(function($stateProvider, $urlRouterProvider) {
 				templateUrl : 'resources/html/frontHtml/page.tpl.html'
 			}
 		}
-	}).state('webInterfaceCtrl', {
-		url : '/webInterface/list/:moduleId/:moduleName',
+	}).state('frontInterfaceCtrl', {
+		url : '/front/interface/list/:moduleId/:moduleName',
 		views : {
 			'main' : {
 				templateUrl : 'resources/html/frontHtml/interfaceList.tpl.html'
 			},
-			'page@webInterfaceCtrl' : {
+			'page@frontInterfaceCtrl' : {
 				templateUrl : 'resources/html/frontHtml/page.tpl.html'
 			}
 		}
-	}).state('webInterfaceDetailCtrl', {
-		url : '/webInterfaceDetail/:id',
+	}).state('frontInterfaceDetailCtrl', {
+		url : '/front/interfaceDetail/:id',
 		views : {
 			'main' : {
 				templateUrl : 'resources/html/frontHtml/interfaceDetail.tpl.html'
 			}
 		}
-	}).state('webInterfaceDebugCtrl', {
-		url : '/webInterface/debug/:id',
+	}).state('frontInterfaceDebugCtrl', {
+		url : '/front/interface/debug/:id',
 		views : {
 			'main' :{
 				templateUrl : function($stateParems){
@@ -271,5 +274,25 @@ app.config(function($stateProvider, $urlRouterProvider) {
 				}
 			}
 		}
+	}).state('project', {
+		url : '/project/:moduleId',
+		views : {
+			'main' :{
+				templateUrl : function($stateParems){
+					return 'resources/html/project/list.tpl.html';
+				}
+			}
+		}
+	}).state('projectMain', {
+		url : '/project/:moduleId/:projectId',
+		views : {
+			'main' :{
+				templateUrl : function($stateParems){
+					return 'resources/html/project/list.tpl.html';
+				}
+			}
+		}
 	})
+	
+	/*********************前端项目主页*******************/
 });
