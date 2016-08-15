@@ -2,20 +2,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>cn.crap</groupId>
-	<artifactId>CrapApi</artifactId>
+	<artifactId>api</artifactId>
 	<packaging>war</packaging>
 	<version>0.0.1-SNAPSHOT</version>
+	<name>api Maven Webapp</name>
+	<url>http://maven.apache.org</url>
 	<properties>
-		<compiler.plugin.version>2.5.1</compiler.plugin.version>
-		<war.plugin.version>2.5</war.plugin.version>
-		<clean.plugin.version>2.6.1</clean.plugin.version>
-		<resources.plugin.version>2.6</resources.plugin.version>
-		<dependency.plugin.version>2.9</dependency.plugin.version>
-		<surefire.plugin.version>2.18.1</surefire.plugin.version>
-		<install.plugin.version>2.5.2</install.plugin.version>
-		<jdk.version>1.7</jdk.version>
-		<encoding>UTF-8</encoding>
-
 		<spring_version>4.2.0.RELEASE</spring_version>
 	</properties>
 	<dependencies>
@@ -178,6 +170,11 @@
 			<artifactId>itext</artifactId>
 			<version>4.2.1</version>
 		</dependency>
+		<dependency>  
+   			<groupId>com.itextpdf</groupId>  
+  		 <artifactId>itext-asian</artifactId>  
+   		<version>5.2.0</version>  
+	</dependency>
 		<!-- End:pdf导出 -->
 		<!-- lucene -->
 		<dependency>
@@ -216,117 +213,64 @@
 		<!-- get text from pdf -->
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
-			<artifactId>pdfbox</artifactId>
+			<artifactId>pdfbox</artifactId>			
 			<version>2.0.2</version>
 		</dependency>
 		<!-- End:get text from pdf -->
 		<!-- get text from doc -->
 		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi-scratchpad</artifactId>
-			<version>3.10-FINAL</version>
+    		<groupId>org.apache.poi</groupId>
+   		 	<artifactId>poi-scratchpad</artifactId>
+    		<version>3.10-FINAL</version>
 		</dependency>
 		<!-- End:get text from doc -->
 		<!-- get text from excel -->
-		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi</artifactId>
-			<version>3.10-FINAL</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi-ooxml</artifactId>
-			<version>3.10-FINAL</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi-examples</artifactId>
-			<version>3.10-FINAL</version>
-		</dependency>
+	<dependency>  
+      <groupId>org.apache.poi</groupId>  
+      <artifactId>poi</artifactId>  
+      <version>3.10-FINAL</version>  
+    </dependency>  
+    <dependency>  
+      <groupId>org.apache.poi</groupId>  
+      <artifactId>poi-ooxml</artifactId>  
+      <version>3.10-FINAL</version>  
+    </dependency>  
+    <dependency>  
+      <groupId>org.apache.poi</groupId>  
+      <artifactId>poi-examples</artifactId>  
+      <version>3.10-FINAL</version>  
+    </dependency>  
 		<!-- End:get text from excel -->
-		<!-- jedis -->
-		<dependency>
+	<!-- jedis -->
+	<dependency>
 			<groupId>redis.clients</groupId>
 			<artifactId>jedis</artifactId>
-			<version>2.8.0</version>
-		</dependency>
-		<!-- End:jedis -->
-		<!-- 读取xml配置 -->
-		<dependency>
-			<groupId>commons-configuration</groupId>
-			<artifactId>commons-configuration</artifactId>
-			<version>1.10</version>
-		</dependency>
-		<!-- End:读取xml配置 -->
+			 <version>2.8.0</version>
+	</dependency>
+	<!-- End:jedis -->
+	<!-- 读取xml配置 -->
+	<dependency>
+    <groupId>commons-configuration</groupId>
+    <artifactId>commons-configuration</artifactId>
+    <version>1.10</version>
+</dependency>
+<!-- End:读取xml配置 -->
 	</dependencies>
 	<build>
-		<finalName>CrapApi</finalName>
-		<sourceDirectory>src/main/java</sourceDirectory>
-		<outputDirectory>src/main/webapp/WEB-INF/classes</outputDirectory>
-		<resources>
-			<resource>
-				<filtering>true</filtering>
-				<directory>src/main/resources</directory>
-			</resource>
-		</resources>
-
-		<plugins>
-			<!-- clean插件 -->
-			<plugin>
-				<artifactId>maven-clean-plugin</artifactId>
-				<version>${clean.plugin.version}</version>
-				<executions>
-					<execution>
-						<id>auto-clean</id>
-						<phase>clean</phase>
-						<goals>
-							<goal>clean</goal>
-						</goals>
-						<configuration>
-							<filesets>
-								<fileset>
-									<directory>src/main/webapp/WEB-INF/classes</directory>
-									<followSymlinks>false</followSymlinks>
-								</fileset>
-								<fileset>
-									<directory>src/main/webapp/WEB-INF/lib</directory>
-									<followSymlinks>false</followSymlinks>
-								</fileset>
-							</filesets>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>${resources.plugin.version}</version>
-				<configuration>
-					<encoding>${encoding}</encoding>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>${compiler.plugin.version}</version>
-				<configuration>
-					<source>${jdk.version}</source>
-					<target>${jdk.version}</target>
-					<encoding>${encoding}</encoding>
-				</configuration>
-			</plugin>
-
-			<!-- war插件 -->
-			<plugin>
-				<artifactId>maven-war-plugin</artifactId>
-				<version>${war.plugin.version}</version>
-				<configuration>
-					<source>${jdk.version}</source>
-					<target>${jdk.version}</target>
-					<encoding>${encoding}</encoding>
-					<warName>CrapApi</warName>
-				</configuration>
-			</plugin>
-		</plugins>
+		 <finalName>api</finalName>
+		 <!-- 设置项目jdk版本，编码 -->
+		 <plugins> 
+	         <plugin> 
+	            <groupId>org.apache.maven.plugins</groupId> 
+	            <artifactId>maven-compiler-plugin</artifactId>
+	            <version>3.1</version> 
+	            <configuration> 
+	                <source>1.7</source> 
+	                <target>1.7</target> 
+	                <encoding>UTF8</encoding> 
+	            </configuration> 
+	         </plugin> 
+    	</plugins>
+		
 	</build>
 </project>

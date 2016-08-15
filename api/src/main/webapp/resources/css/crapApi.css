@@ -38,11 +38,15 @@ blockquote{
 }  
 .search-section:hover .search-button{
 	opacity:0.8!important;
-}      
-/*****项目主页*****/
-.project-title{
-	background-image:url('../images/project.jpg'); background-position:center;
-}
+}  
+/*****登陆框*******/
+.login{
+	position: relative;
+	width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}    
+
 /*****左边菜单*****/
  .left-menu-border-top{
  	border-top: 1px solid #888!important;
@@ -89,12 +93,12 @@ blockquote{
 }
 
 .input-wrapper input {
-    padding: 15px 8px;
+    padding: 26px 8px;
     height: 48px;
     width: 100%;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 18px;
-    color: #787878;
+    color: #999999;
     border: 0;
     outline: 0;
     box-sizing: border-box;
@@ -179,6 +183,7 @@ blockquote{
     line-height: 26px;
     width: 100%;
 }
+
 #editForm table td{
 	padding:6px 8px;
 }
