@@ -1,4 +1,4 @@
-<div class="r0 p10 pt0 col-xs-12" ng-controller="interfaceDetailCtrl">
+<div class="r0 p10 pt0 col-xs-12" ng-controller="backInterfaceDetailCtrl">
 	<div class="col-xs-12 p0" id="interFaceDetail">
 		<form ng-submit="submitForm('module/addOrUpdate.do')"
 			ng-if="model.parentId!=null">
@@ -61,7 +61,7 @@
 					<td>模块名</td>
 					<td>
 						<input  class="form-control"  id="moduleName" type="text" ng-model="model.moduleName" required placeholder="点击输入框选择模块"
-					ng-focus="loadPickByName('iwidth=220|iheight=320|tagName=moduleName|tag=moduleId|code=DATACENTER|def='+model.moduleId,$event)">
+					ng-focus="loadPickByName('iwidth=260|iheight=360|tagName=moduleName|tag=moduleId|code=INTERFACEMODULE|def='+model.moduleId,$event)">
 					</td>
 				</tr>
 				<tr>
